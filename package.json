@@ -1,0 +1,17 @@
+{
+  "name": "walk-first",
+  "version": "1.0.0",
+  "description": "Find if walking a few blocks before your ride saves time",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1"
+  }
+}

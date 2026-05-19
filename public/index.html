@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Walk First</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #f5f5f5;
+      color: #333;
+      line-height: 1.6;
+      padding: 20px;
+      max-width: 700px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      font-size: 1.8rem;
+      margin-bottom: 8px;
+      color: #1a1a1a;
+    }
+
+    .subtitle {
+      color: #666;
+      margin-bottom: 24px;
+      font-size: 0.95rem;
+    }
+
+    .form-group {
+      margin-bottom: 16px;
+    }
+
+    label {
+      display: block;
+      font-weight: 500;
+      margin-bottom: 6px;
+      font-size: 0.9rem;
+    }
+
+    .input-wrapper {
+      position: relative;
+      display: flex;
+      gap: 8px;
+    }
+
+    input[type="text"],
+    input[type="datetime-local"] {
+      flex: 1;
+      padding: 12px;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      font-size: 1rem;
+      transition: border-color 0.2s;
+    }
+
+    input[type="text"]:focus,
+    input[type="datetime-local"]:focus {
+      outline: none;
+      border-color: #0066cc;
+    }
+
+    .location-btn {
+      padding: 12px;
+      background: #f0f0f0;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s;
+      width: 48px;
+      flex-shrink: 0;
+    }
+
+    .location-btn:hover {
+      background: #e0e0e0;
+    }
+
+    .location-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .location-btn svg {
+      width: 20px;
+      height: 20px;
+    }
+
+    button[type="submit"] {
+      width: 100%;
+      padding: 14px;
+      background: #0066cc;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 1rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    button[type="submit"]:hover {
+      background: #0052a3;
+    }
+
+    button[type="submit"]:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+    }
+
+    .time-options {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+
+    .time-option {
+      padding: 8px 12px;
+      background: #fff;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      transition: all 0.2s;
+    }
+
+    .time-option:hover {
+      border-color: #0066cc;
+    }
+
+    .time-option.active {
+      background: #0066cc;
+      color: white;
+      border-color: #0066cc;
+    }
+
+    .datetime-wrapper {
+      display: none;
+    }
+
+    .datetime-wrapper.visible {
+      display: block;
+    }
+
+    .results {
+      margin-top: 24px;
+    }
+
+    .baseline {
+      background: #fff;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      padding: 16px;
+      margin-bottom: 16px;
+    }
+
+    .baseline-label {
+      font-size: 0.85rem;
+      color: #666;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 4px;
+    }
+
+    .baseline-time {
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: #1a1a1a;
+    }
+
+    .baseline-route {
+      font-size: 0.85rem;
+      color: #888;
+      margin-top: 8px;
+    }
+
+    .baseline-departure {
+      font-size: 0.8rem;
+      color: #666;
+      margin-top: 4px;
+    }
+
+    .candidates-header {
+      font-size: 1rem;
+      font-weight: 600;
+      margin-bottom: 12px;
+      color: #1a1a1a;
+    }
+
+    .candidate {
+      background: #fff;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      padding: 16px;
+      margin-bottom: 12px;
+    }
+
+    .candidate.best {
+      border-color: #22c55e;
+      background: #f0fdf4;
+    }
+
+    .candidate-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 12px;
+    }
+
+    .candidate-direction {
+      font-weight: 500;
+      color: #1a1a1a;
+    }
+
+    .candidate-saved {
+      font-weight: 600;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 0.85rem;
+    }
+
+    .saved-positive {
+      background: #dcfce7;
+      color: #166534;
+    }
+
+    .saved-neutral {
+      background: #fef3c7;
+      color: #92400e;
+    }
+
+    .candidate-times {
+      display: flex;
+      gap: 24px;
+      font-size: 0.9rem;
+    }
+
+    .time-item {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .time-label {
+      color: #888;
+      font-size: 0.8rem;
+    }
+
+    .time-value {
+      font-weight: 500;
+      color: #333;
+    }
+
+    .time-value.total {
+      color: #0066cc;
+      font-weight: 600;
+    }
+
+    .no-improvement {
+      background: #fef3c7;
+      border: 1px solid #fcd34d;
+      border-radius: 8px;
+      padding: 16px;
+      text-align: center;
+      color: #92400e;
+    }
+
+    .error {
+      background: #fee2e2;
+      border: 1px solid #fecaca;
+      border-radius: 8px;
+      padding: 16px;
+      color: #dc2626;
+      margin-top: 16px;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 40px;
+      color: #666;
+    }
+
+    .spinner {
+      display: inline-block;
+      width: 24px;
+      height: 24px;
+      border: 3px solid #ddd;
+      border-top-color: #0066cc;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-bottom: 12px;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .stats {
+      font-size: 0.85rem;
+      color: #888;
+      margin-top: 16px;
+      text-align: center;
+    }
+
+    /* Autocomplete dropdown styles */
+    .pac-container {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      border-radius: 6px;
+      border: 1px solid #ddd;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+
+    .pac-item {
+      padding: 8px 12px;
+      cursor: pointer;
+    }
+
+    .pac-item:hover {
+      background: #f5f5f5;
+    }
+  </style>
+</head>
+<body>
+  <h1>Walk First</h1>
+  <p class="subtitle">Find if walking a few blocks before your ride saves time.</p>
+
+  <form id="routeForm">
+    <div class="form-group">
+      <label for="origin">Pickup Location</label>
+      <div class="input-wrapper">
+        <input type="text" id="origin" placeholder="e.g., 350 5th Ave, New York, NY" required>
+        <button type="button" class="location-btn" id="locationBtn" title="Use my location">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="3"></circle>
+            <path d="M12 2v4m0 12v4m10-10h-4M6 12H2"></path>
+          </svg>
+        </button>
+      </div>
+    </div>
+    <div class="form-group">
+      <label for="destination">Destination</label>
+      <input type="text" id="destination" placeholder="e.g., JFK Airport" required>
+    </div>
+    <div class="form-group">
+      <label>Departure Time</label>
+      <div class="time-options">
+        <button type="button" class="time-option active" data-value="now">Now</button>
+        <button type="button" class="time-option" data-value="rush-am">Rush Hour (8 AM)</button>
+        <button type="button" class="time-option" data-value="rush-pm">Rush Hour (6 PM)</button>
+        <button type="button" class="time-option" data-value="custom">Custom</button>
+      </div>
+      <div class="datetime-wrapper" id="datetimeWrapper">
+        <input type="datetime-local" id="departureTime">
+      </div>
+    </div>
+    <button type="submit" id="submitBtn">Calculate Routes</button>
+  </form>
+
+  <div id="loading" class="loading hidden">
+    <div class="spinner"></div>
+    <div>Calculating routes...</div>
+  </div>
+
+  <div id="error" class="error hidden"></div>
+
+  <div id="results" class="results hidden">
+    <div class="baseline">
+      <div class="baseline-label">Direct Ride</div>
+      <div class="baseline-time" id="baselineTime"></div>
+      <div class="baseline-route" id="baselineRoute"></div>
+      <div class="baseline-departure" id="baselineDeparture"></div>
+    </div>
+
+    <div id="candidatesSection">
+      <div class="candidates-header" id="candidatesHeader"></div>
+      <div id="candidatesList"></div>
+    </div>
+
+    <div id="noImprovement" class="no-improvement hidden">
+      No faster routes found. The direct ride is your best option.
+    </div>
+
+    <div class="stats" id="stats"></div>
+  </div>
+
+  <script>
+    let apiKey = null;
+    let autocompleteOrigin = null;
+    let autocompleteDestination = null;
+    let selectedTimeOption = 'now';
+
+    // Fetch API key for Places Autocomplete
+    fetch('/api/config')
+      .then(r => r.json())
+      .then(config => {
+        apiKey = config.apiKey;
+        if (apiKey) {
+          loadGooglePlaces();
+        }
+      })
+      .catch(() => {});
+
+    function loadGooglePlaces() {
+      const script = document.createElement('script');
+      script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places&callback=initAutocomplete`;
+      script.async = true;
+      document.head.appendChild(script);
+    }
+
+    window.initAutocomplete = function() {
+      const options = {
+        types: ['geocode', 'establishment']
+      };
+
+      autocompleteOrigin = new google.maps.places.Autocomplete(
+        document.getElementById('origin'), options
+      );
+
+      autocompleteDestination = new google.maps.places.Autocomplete(
+        document.getElementById('destination'), options
+      );
+    };
+
+    // Location button
+    const locationBtn = document.getElementById('locationBtn');
+    const originInput = document.getElementById('origin');
+
+    locationBtn.addEventListener('click', () => {
+      if (!navigator.geolocation) {
+        alert('Geolocation is not supported by your browser');
+        return;
+      }
+
+      locationBtn.disabled = true;
+      navigator.geolocation.getCurrentPosition(
+        async (position) => {
+          const { latitude, longitude } = position.coords;
+          // Reverse geocode to get address
+          try {
+            const response = await fetch(`/api/reverse-geocode?lat=${latitude}&lng=${longitude}`);
+            const data = await response.json();
+            if (data.address) {
+              originInput.value = data.address;
+            } else {
+              originInput.value = `${latitude.toFixed(6)}, ${longitude.toFixed(6)}`;
+            }
+          } catch (e) {
+            originInput.value = `${latitude.toFixed(6)}, ${longitude.toFixed(6)}`;
+          }
+          locationBtn.disabled = false;
+        },
+        (err) => {
+          alert('Unable to get your location: ' + err.message);
+          locationBtn.disabled = false;
+        },
+        { enableHighAccuracy: true }
+      );
+    });
+
+    // Time option buttons
+    const timeOptions = document.querySelectorAll('.time-option');
+    const datetimeWrapper = document.getElementById('datetimeWrapper');
+    const departureTimeInput = document.getElementById('departureTime');
+
+    // Set default datetime to tomorrow 8 AM
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    tomorrow.setHours(8, 0, 0, 0);
+    departureTimeInput.value = tomorrow.toISOString().slice(0, 16);
+
+    timeOptions.forEach(btn => {
+      btn.addEventListener('click', () => {
+        timeOptions.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        selectedTimeOption = btn.dataset.value;
+
+        if (selectedTimeOption === 'custom') {
+          datetimeWrapper.classList.add('visible');
+        } else {
+          datetimeWrapper.classList.remove('visible');
+        }
+      });
+    });
+
+    function getDepartureTime() {
+      const now = new Date();
+
+      switch (selectedTimeOption) {
+        case 'now':
+          return null; // Use current time
+        case 'rush-am': {
+          // Next occurrence of 8 AM
+          const next8am = new Date(now);
+          next8am.setHours(8, 0, 0, 0);
+          if (now >= next8am) {
+            next8am.setDate(next8am.getDate() + 1);
+          }
+          return Math.floor(next8am.getTime() / 1000);
+        }
+        case 'rush-pm': {
+          // Next occurrence of 6 PM
+          const next6pm = new Date(now);
+          next6pm.setHours(18, 0, 0, 0);
+          if (now >= next6pm) {
+            next6pm.setDate(next6pm.getDate() + 1);
+          }
+          return Math.floor(next6pm.getTime() / 1000);
+        }
+        case 'custom': {
+          const customTime = new Date(departureTimeInput.value);
+          return Math.floor(customTime.getTime() / 1000);
+        }
+        default:
+          return null;
+      }
+    }
+
+    const form = document.getElementById('routeForm');
+    const submitBtn = document.getElementById('submitBtn');
+    const loading = document.getElementById('loading');
+    const error = document.getElementById('error');
+    const results = document.getElementById('results');
+    const baselineTime = document.getElementById('baselineTime');
+    const baselineRoute = document.getElementById('baselineRoute');
+    const baselineDeparture = document.getElementById('baselineDeparture');
+    const candidatesSection = document.getElementById('candidatesSection');
+    const candidatesHeader = document.getElementById('candidatesHeader');
+    const candidatesList = document.getElementById('candidatesList');
+    const noImprovement = document.getElementById('noImprovement');
+    const stats = document.getElementById('stats');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const origin = document.getElementById('origin').value.trim();
+      const destination = document.getElementById('destination').value.trim();
+      const departureTime = getDepartureTime();
+
+      if (!origin || !destination) return;
+
+      // Reset UI
+      error.classList.add('hidden');
+      results.classList.add('hidden');
+      loading.classList.remove('hidden');
+      submitBtn.disabled = true;
+
+      try {
+        const body = { origin, destination };
+        if (departureTime) {
+          body.departureTime = departureTime;
+        }
+
+        const response = await fetch('/api/calculate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body)
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.error || 'Request failed');
+        }
+
+        displayResults(data, departureTime);
+      } catch (err) {
+        error.textContent = err.message;
+        error.classList.remove('hidden');
+      } finally {
+        loading.classList.add('hidden');
+        submitBtn.disabled = false;
+      }
+    });
+
+    function displayResults(data, departureTime) {
+      // Show baseline
+      baselineTime.textContent = data.directDriveTimeText;
+      baselineRoute.textContent = `${data.origin} → ${data.destination}`;
+
+      if (departureTime) {
+        const depDate = new Date(departureTime * 1000);
+        baselineDeparture.textContent = `Departure: ${depDate.toLocaleString()}`;
+        baselineDeparture.classList.remove('hidden');
+      } else {
+        baselineDeparture.textContent = 'Departure: Now (current traffic)';
+      }
+
+      // Filter candidates that actually save time
+      const betterCandidates = data.candidates.filter(c => c.savedSecs > 0);
+      const neutralCandidates = data.candidates.filter(c => c.savedSecs <= 0 && c.savedSecs >= -60);
+
+      candidatesList.innerHTML = '';
+
+      if (betterCandidates.length === 0 && neutralCandidates.length === 0) {
+        candidatesSection.classList.add('hidden');
+        noImprovement.classList.remove('hidden');
+      } else {
+        candidatesSection.classList.remove('hidden');
+        noImprovement.classList.add('hidden');
+
+        if (betterCandidates.length > 0) {
+          candidatesHeader.textContent = `${betterCandidates.length} faster route${betterCandidates.length > 1 ? 's' : ''} found`;
+        } else {
+          candidatesHeader.textContent = 'No faster routes, but close alternatives:';
+        }
+
+        // Show better candidates first, then neutral
+        const allToShow = [...betterCandidates, ...neutralCandidates];
+
+        allToShow.forEach((candidate, index) => {
+          const isBest = index === 0 && candidate.savedSecs > 0;
+          const div = document.createElement('div');
+          div.className = `candidate${isBest ? ' best' : ''}`;
+
+          const savedClass = candidate.savedSecs > 0 ? 'saved-positive' : 'saved-neutral';
+          const savedText = candidate.savedSecs > 0
+            ? `${candidate.savedMins} min faster`
+            : candidate.savedSecs === 0
+              ? 'Same time'
+              : `${Math.abs(candidate.savedMins)} min slower`;
+
+          div.innerHTML = `
+            <div class="candidate-header">
+              <div class="candidate-direction">Walk ${candidate.direction}</div>
+              <div class="candidate-saved ${savedClass}">${savedText}</div>
+            </div>
+            <div class="candidate-times">
+              <div class="time-item">
+                <span class="time-label">Walk</span>
+                <span class="time-value">${candidate.walkTimeText}</span>
+              </div>
+              <div class="time-item">
+                <span class="time-label">Ride</span>
+                <span class="time-value">${candidate.driveTimeText}</span>
+              </div>
+              <div class="time-item">
+                <span class="time-label">Total</span>
+                <span class="time-value total">${candidate.totalTimeText}</span>
+              </div>
+            </div>
+          `;
+
+          candidatesList.appendChild(div);
+        });
+      }
+
+      stats.textContent = `Checked ${data.totalCandidatesChecked} nearby pickup points`;
+      results.classList.remove('hidden');
+    }
+  </script>
+</body>
+</html>
